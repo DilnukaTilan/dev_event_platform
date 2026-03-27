@@ -7,7 +7,7 @@
   --color-blue: #94eaff;
   --color-light-100: #e7f2ff;
   --color-light-200: #bdbdbd;
-  --color-border-dark: #151024;
+  --color-border-dark: #1e2d36;
   --color-dark-100: #0d161a;
   --color-dark-200: #182830;
   --radius: 0.625rem;
@@ -95,15 +95,26 @@
 }
 
 @utility text-gradient {
-  @apply to-blue bg-gradient-to-b from-white via-white bg-clip-text font-semibold text-transparent;
+  @apply to-blue bg-linear-to-b from-white via-white bg-clip-text font-semibold text-transparent;
 }
 
 @utility glass {
-  @apply bg-[#12121280]/50 rounded-md bg-clip-padding backdrop-filter backdrop-blur-xl border-b border-border-dark;
+  @apply bg-[#12121280]/50 rounded-xl bg-clip-padding backdrop-filter backdrop-blur-2xl border-b border-border-dark;
 }
 
 @utility card-shadow {
-  box-shadow: 0px 4px 40px 0px #00000066;
+  box-shadow:
+    0px 4px 40px 0px rgba(0, 0, 0, 0.4),
+    0px 0px 80px -20px rgba(89, 222, 202, 0.06);
+}
+
+::selection {
+  background-color: rgba(89, 222, 202, 0.25);
+  color: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @layer base {
@@ -120,27 +131,34 @@
   }
 
   h1 {
-    @apply text-gradient text-6xl font-semibold max-sm:text-4xl;
+    @apply text-gradient text-6xl font-semibold max-sm:text-4xl leading-tight tracking-tight;
   }
 
   h3 {
-    @apply font-schibsted-grotesk text-2xl font-bold;
+    @apply font-schibsted-grotesk text-2xl font-bold tracking-tight;
   }
 
   ul {
     @apply list-disc list-inside;
+  }
+
+  a {
+    @apply transition-colors duration-200;
   }
 }
 
 @layer components {
   #home {
     .subheading {
-      @apply text-light-100 text-lg max-sm:text-sm text-center mt-5;
+      @apply text-light-100 text-lg max-sm:text-sm text-center mt-5 leading-relaxed;
     }
   }
 
   #explore-btn {
-    @apply border-dark-200 bg-dark-100 flex w-fit cursor-pointer  rounded-full border px-8 py-3.5 max-sm:w-full text-center;
+    @apply border-dark-200 bg-dark-100 flex w-fit cursor-pointer rounded-full border px-8 py-3.5
+      max-sm:w-full text-center
+      transition-all duration-300 ease-out
+      hover:border-primary/40 hover:shadow-[0_0_20px_rgba(89,222,202,0.12)];
 
     a {
       @apply flex-center gap-2 text-center w-full;
@@ -148,14 +166,14 @@
   }
 
   header {
-    @apply glass sticky top-0 z-50;
+    @apply glass sticky top-0 z-50 transition-all duration-300;
 
     nav {
       @apply flex flex-row justify-between mx-auto container sm:px-10 px-5 py-4;
     }
 
     .logo {
-      @apply flex flex-row items-center gap-2;
+      @apply flex flex-row items-center gap-2 transition-opacity duration-200 hover:opacity-80;
 
       p {
         @apply text-xl font-bold italic max-sm:hidden;
@@ -164,6 +182,19 @@
 
     ul {
       @apply flex flex-row items-center gap-6;
+    }
+
+    ul a {
+      @apply relative text-light-200 transition-colors duration-200 hover:text-white;
+    }
+
+    ul a::after {
+      content: "";
+      @apply absolute -bottom-1 left-0 h-[2px] w-0 bg-primary rounded-full transition-all duration-300;
+    }
+
+    ul a:hover::after {
+      @apply w-full;
     }
   }
 
@@ -175,11 +206,11 @@
     @apply flex flex-col gap-3;
 
     .poster {
-      @apply h-[300px] w-full rounded-lg object-cover;
+      @apply h-[300px] w-full rounded-xl object-cover transition-all duration-500 ease-out;
     }
 
     .title {
-      @apply text-[20px] font-semibold line-clamp-1;
+      @apply text-[20px] font-semibold line-clamp-1 transition-colors duration-200;
     }
 
     p {
@@ -193,6 +224,15 @@
         @apply flex flex-row gap-2;
       }
     }
+
+    &:hover .poster {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      transform: scale(1.02);
+    }
+
+    &:hover .title {
+      color: var(--primary);
+    }
   }
 
   #event {
@@ -204,10 +244,10 @@
       @apply flex w-full flex-col lg:flex-row gap-12 items-start mt-12 max-lg:items-center;
 
       .content {
-        @apply flex flex-[2] flex-col gap-8 max-lg:w-full;
+        @apply flex flex-2 flex-col gap-8 max-lg:w-full;
 
         .banner {
-          @apply max-h-[457px] w-full rounded-lg object-cover;
+          @apply max-h-[457px] w-full rounded-xl object-cover;
         }
 
         .agenda {
@@ -215,27 +255,29 @@
 
           ul {
             li {
-              @apply text-light-100 text-lg max-sm:text-sm;
+              @apply text-light-100 text-lg max-sm:text-sm leading-relaxed;
             }
           }
         }
       }
 
       .booking {
-        @apply flex-1 w-full p-4 border-l border-gray-700;
+        @apply flex-1 w-full p-4 border-l border-gray-700/50;
 
         .signup-card {
-          @apply bg-dark-100 border-dark-200 card-shadow flex w-full flex-col gap-6 rounded-[10px] border px-5 py-6;
+          @apply bg-dark-100/80 border-dark-200 card-shadow flex w-full flex-col gap-6
+            rounded-xl border px-5 py-6
+            backdrop-blur-sm;
         }
       }
     }
 
     h2 {
-      @apply font-schibsted-grotesk text-2xl font-bold;
+      @apply font-schibsted-grotesk text-2xl font-bold tracking-tight;
     }
 
     p {
-      @apply text-light-100 text-lg max-sm:text-sm;
+      @apply text-light-100 text-lg max-sm:text-sm leading-relaxed;
     }
 
     .flex-col-gap-2 {
@@ -248,7 +290,10 @@
   }
 
   .pill {
-    @apply bg-dark-100 text-light-100 text-xs rounded-[6px] px-5 py-2;
+    @apply bg-dark-100 text-light-100 text-xs rounded-full px-5 py-2
+      border border-transparent
+      transition-colors duration-200
+      hover:border-primary/30 hover:text-white;
   }
 
   #book-event {
@@ -261,12 +306,19 @@
         @apply flex flex-col gap-2;
 
         input {
-          @apply bg-dark-200 rounded-[6px] px-5 py-2.5;
+          @apply bg-dark-200 rounded-lg px-5 py-2.5
+            border border-transparent
+            transition-all duration-200
+            focus:outline-none focus:border-primary/50 focus:shadow-[0_0_0_3px_rgba(89,222,202,0.1)];
         }
       }
 
       button {
-        @apply bg-primary hover:bg-primary/90 w-full cursor-pointer items-center justify-center rounded-[6px] px-4 py-2.5 text-lg font-semibold text-black;
+        @apply bg-primary w-full cursor-pointer items-center justify-center rounded-lg px-4 py-2.5
+          text-lg font-semibold text-black
+          transition-all duration-200
+          hover:bg-primary/90 hover:shadow-[0_4px_20px_rgba(89,222,202,0.3)]
+          active:scale-[0.98];
       }
     }
   }

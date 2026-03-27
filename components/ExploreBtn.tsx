@@ -7,7 +7,7 @@ const ExploreBtn = () => {
     <button
       type="button"
       id="explore-btn"
-      className="mt-7 mx-auto"
+      className="mt-7 mx-auto hover:scale-105 transition-all duration-300 focus:scale-95"
       onClick={() => console.log("CLICK")}
     >
       <a href="#events">
