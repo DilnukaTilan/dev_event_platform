@@ -169,7 +169,7 @@ html {
     @apply glass sticky top-0 z-50 transition-all duration-300;
 
     nav {
-      @apply flex flex-row justify-between mx-auto container sm:px-10 px-5 py-4;
+      @apply flex flex-row justify-between mx-auto container text-sm sm:text-base sm:px-10 px-5 py-4;
     }
 
     .logo {
