@@ -53,10 +53,10 @@ function normaliseTime(raw: string): string {
     let hours = parseInt(h12[1], 10);
     const mins = parseInt(h12[2], 10);
     const period = h12[3].toUpperCase();
+    if (hours < 1 || hours > 12 || mins > 59)
+      throw new Error(`Invalid time value: "${raw}"`);
     if (hours === 12) hours = period === "AM" ? 0 : 12;
     else if (period === "PM") hours += 12;
-    if (hours > 23 || mins > 59)
-      throw new Error(`Invalid time value: "${raw}"`);
     return `${String(hours).padStart(2, "0")}:${h12[2]}`;
   }
 
@@ -113,7 +113,19 @@ eventSchema.pre("save", async function () {
     throw new Error("tags must contain at least one item.");
 
   if (this.isModified("title")) {
-    this.slug = generateSlug(this.title);
+    let slug = generateSlug(this.title);
+    const Event = mongoose.models.Event;
+    if (Event) {
+      const query: Record<string, unknown> = { slug };
+      if (!this.isNew) query._id = { $ne: this._id };
+      let suffix = 0;
+      while (await Event.exists(query)) {
+        suffix++;
+        slug = `${generateSlug(this.title)}-${suffix}`;
+        query.slug = slug;
+      }
+    }
+    this.slug = slug;
   }
   if (this.isModified("date")) this.date = normaliseDate(this.date);
   if (this.isModified("time")) this.time = normaliseTime(this.time);

@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
+import "./event.model";
 
 export interface IBooking extends Document {
   eventId: Types.ObjectId;
@@ -26,6 +27,8 @@ const bookingSchema = new Schema<IBooking>(
   },
   { timestamps: true },
 );
+
+bookingSchema.index({ eventId: 1, email: 1 }, { unique: true });
 
 bookingSchema.pre("save", async function () {
   if (!EMAIL_RE.test(this.email)) {
