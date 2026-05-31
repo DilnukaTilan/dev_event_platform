@@ -21,11 +21,19 @@ const RenderEventDetails = ({
 const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => (
   <div className="agenda">
     <h2>Agenda</h2>
-    <ul>
-      {agendaItems.map((item) => (
-        <li key={item}>{item}</li>
+    <div className="agenda-timeline">
+      {agendaItems.map((item, index) => (
+        <div className="agenda-item" key={item}>
+          <div className="agenda-indicator">
+            <span className="agenda-step">{index + 1}</span>
+            {index < agendaItems.length - 1 && <div className="agenda-line" />}
+          </div>
+          <div className="agenda-card">
+            <p>{item}</p>
+          </div>
+        </div>
       ))}
-    </ul>
+    </div>
   </div>
 );
 
