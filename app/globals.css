@@ -405,6 +405,337 @@ html {
       }
     }
   }
+
+  #create-event {
+    @apply flex flex-col gap-10;
+
+    .create-header {
+      @apply flex w-2/3 flex-col items-start gap-4 max-lg:w-full;
+    }
+
+    .create-header .eyebrow {
+      @apply font-martian-mono text-xs uppercase tracking-[0.18em] text-primary;
+    }
+
+    .create-header p:not(.eyebrow) {
+      @apply text-light-100 text-lg max-sm:text-sm leading-relaxed;
+    }
+
+    .create-event-form {
+      @apply w-full;
+    }
+
+    .form-grid {
+      @apply grid grid-cols-[minmax(0,1fr)_360px] gap-8 max-lg:grid-cols-1;
+    }
+
+    .form-main,
+    .form-side {
+      @apply bg-dark-100/70 border-dark-200 card-shadow rounded-xl border backdrop-blur-sm;
+    }
+
+    .form-main {
+      @apply grid gap-6 p-6 max-sm:p-4;
+    }
+
+    .form-side {
+      @apply sticky top-24 flex h-fit flex-col gap-5 p-5 max-lg:static max-sm:p-4;
+    }
+
+    .two-column {
+      @apply grid grid-cols-2 gap-5 max-md:grid-cols-1;
+    }
+
+    .list-fields {
+      @apply items-start;
+    }
+
+    .field-group,
+    .image-field,
+    .admin-panel {
+      @apply flex flex-col gap-2;
+    }
+
+    label {
+      @apply flex items-center gap-2 text-sm font-semibold text-light-100;
+    }
+
+    input,
+    textarea {
+      @apply bg-dark-200/90 text-light-100 rounded-lg border border-transparent px-4 py-3 text-sm
+        transition-all duration-200 placeholder:text-light-200/60
+        focus:border-primary/50 focus:outline-none focus:shadow-[0_0_0_3px_rgba(89,222,202,0.1)];
+    }
+
+    textarea {
+      @apply resize-y leading-relaxed;
+    }
+
+    input[type="file"] {
+      @apply cursor-pointer text-light-200;
+    }
+
+    input[type="file"]::file-selector-button {
+      @apply mr-4 cursor-pointer rounded-md border-0 bg-primary px-4 py-2 text-sm font-semibold text-black
+        transition-colors duration-200 hover:bg-primary/90;
+    }
+
+    .mode-options {
+      @apply grid grid-cols-3 gap-3 max-sm:grid-cols-1;
+    }
+
+    .mode-option {
+      @apply flex cursor-pointer items-center justify-center rounded-lg border border-dark-200 bg-dark-200/60 px-4 py-3
+        text-sm font-semibold capitalize text-light-200 transition-all duration-200;
+    }
+
+    .mode-option input {
+      @apply sr-only;
+    }
+
+    .mode-option:has(input:checked) {
+      @apply border-primary/60 bg-primary/15 text-white shadow-[0_0_18px_rgba(89,222,202,0.08)];
+    }
+
+    .image-preview {
+      @apply flex-center h-[220px] overflow-hidden rounded-lg border border-dashed border-border-dark bg-dark-200/50 text-light-200;
+    }
+
+    .preview-image {
+      @apply h-full w-full object-cover;
+    }
+
+    .admin-panel {
+      @apply border-t border-border-dark pt-5;
+    }
+
+    .summary-panel {
+      @apply grid grid-cols-2 gap-3;
+    }
+
+    .summary-panel p {
+      @apply rounded-lg border border-border-dark bg-dark-200/50 px-4 py-3 text-center text-sm text-light-100;
+    }
+
+    .form-message {
+      @apply rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-light-100;
+    }
+
+    button[type="submit"] {
+      @apply flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-5
+        text-base font-semibold text-black transition-all duration-200
+        hover:bg-primary/90 hover:shadow-[0_4px_20px_rgba(89,222,202,0.3)]
+        active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+    }
+  }
+
+  #events-admin {
+    @apply flex flex-col gap-10;
+
+    .events-admin-header {
+      @apply flex w-2/3 flex-col items-start gap-4 max-lg:w-full;
+    }
+
+    .eyebrow {
+      @apply font-martian-mono text-xs uppercase tracking-[0.18em] text-primary;
+    }
+
+    .events-admin-header p:not(.eyebrow) {
+      @apply text-light-100 text-lg max-sm:text-sm leading-relaxed;
+    }
+
+    .events-admin-manager {
+      @apply flex flex-col gap-6;
+    }
+
+    .admin-access {
+      @apply bg-dark-100/70 border-dark-200 card-shadow flex items-end gap-4 rounded-xl border p-5
+        backdrop-blur-sm max-md:flex-col max-md:items-stretch;
+    }
+
+    .admin-access > div,
+    .field-group {
+      @apply flex flex-col gap-2;
+    }
+
+    label {
+      @apply flex items-center gap-2 text-sm font-semibold text-light-100;
+    }
+
+    input,
+    textarea {
+      @apply bg-dark-200/90 text-light-100 rounded-lg border border-transparent px-4 py-3 text-sm
+        transition-all duration-200 placeholder:text-light-200/60
+        focus:border-primary/50 focus:outline-none focus:shadow-[0_0_0_3px_rgba(89,222,202,0.1)];
+    }
+
+    textarea {
+      @apply resize-y leading-relaxed;
+    }
+
+    input[type="file"] {
+      @apply cursor-pointer text-light-200;
+    }
+
+    input[type="file"]::file-selector-button {
+      @apply mr-4 cursor-pointer rounded-md border-0 bg-primary px-4 py-2 text-sm font-semibold text-black
+        transition-colors duration-200 hover:bg-primary/90;
+    }
+
+    button,
+    .editor-toolbar a {
+      @apply flex h-11 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold
+        transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .admin-access button,
+    .editor-side button[type="submit"] {
+      @apply bg-primary text-black hover:bg-primary/90 hover:shadow-[0_4px_20px_rgba(89,222,202,0.3)]
+        active:scale-[0.98];
+    }
+
+    .admin-message {
+      @apply rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-light-100;
+    }
+
+    .events-workspace {
+      @apply grid grid-cols-[330px_minmax(0,1fr)] gap-6 max-lg:grid-cols-1;
+    }
+
+    .events-list,
+    .event-editor {
+      @apply bg-dark-100/70 border-dark-200 card-shadow rounded-xl border backdrop-blur-sm;
+    }
+
+    .events-list {
+      @apply h-fit overflow-hidden;
+    }
+
+    .list-heading {
+      @apply flex items-center justify-between border-b border-border-dark px-5 py-4;
+    }
+
+    .list-heading h2,
+    .event-editor h2 {
+      @apply font-schibsted-grotesk text-2xl font-bold tracking-tight;
+    }
+
+    .list-heading span {
+      @apply flex-center h-8 min-w-8 rounded-full bg-primary/15 px-2 text-sm font-bold text-primary;
+    }
+
+    .events-list ul {
+      @apply flex max-h-[720px] list-none flex-col overflow-y-auto p-2;
+    }
+
+    .events-list li {
+      @apply list-none;
+    }
+
+    .events-list li button {
+      @apply h-auto w-full justify-start gap-3 rounded-lg bg-transparent px-3 py-3 text-left text-light-100
+        hover:bg-dark-200/70;
+    }
+
+    .events-list li button.active {
+      @apply bg-primary/15 ring-1 ring-primary/35;
+    }
+
+    .event-thumb {
+      @apply h-[52px] w-[72px] shrink-0 rounded-md object-cover;
+    }
+
+    .events-list strong,
+    .events-list small {
+      @apply block;
+    }
+
+    .events-list strong {
+      @apply line-clamp-1 text-sm font-semibold text-white;
+    }
+
+    .events-list small {
+      @apply mt-1 text-xs font-normal text-light-200;
+    }
+
+    .empty-state,
+    .editor-empty p {
+      @apply text-light-200 text-sm leading-relaxed;
+    }
+
+    .empty-state {
+      @apply p-5;
+    }
+
+    .event-editor {
+      @apply min-h-[520px] p-5;
+    }
+
+    .editor-toolbar {
+      @apply mb-6 flex items-start justify-between gap-4 border-b border-border-dark pb-5 max-sm:flex-col;
+    }
+
+    .editor-toolbar h2 {
+      @apply mt-1;
+    }
+
+    .editor-toolbar a {
+      @apply border border-dark-200 bg-dark-200/70 text-light-100 hover:border-primary/40 hover:text-white;
+    }
+
+    .editor-layout {
+      @apply grid grid-cols-[minmax(0,1fr)_320px] gap-6 max-xl:grid-cols-1;
+    }
+
+    .editor-fields {
+      @apply grid gap-5;
+    }
+
+    .two-column {
+      @apply grid grid-cols-2 gap-5 max-md:grid-cols-1;
+    }
+
+    .mode-options {
+      @apply grid grid-cols-3 gap-3 max-sm:grid-cols-1;
+    }
+
+    .mode-option {
+      @apply flex h-11 cursor-pointer items-center justify-center rounded-lg border border-dark-200 bg-dark-200/60 px-4
+        text-sm font-semibold capitalize text-light-200 transition-all duration-200;
+    }
+
+    .mode-option input {
+      @apply sr-only;
+    }
+
+    .mode-option:has(input:checked) {
+      @apply border-primary/60 bg-primary/15 text-white shadow-[0_0_18px_rgba(89,222,202,0.08)];
+    }
+
+    .editor-side {
+      @apply flex flex-col gap-5;
+    }
+
+    .editor-image {
+      @apply h-[220px] w-full rounded-lg object-cover;
+    }
+
+    .summary-panel {
+      @apply grid grid-cols-2 gap-3;
+    }
+
+    .summary-panel p {
+      @apply rounded-lg border border-border-dark bg-dark-200/50 px-4 py-3 text-center text-sm text-light-100;
+    }
+
+    .danger-button {
+      @apply border border-red-500/30 bg-red-500/10 text-red-100 hover:border-red-400/60 hover:bg-red-500/20;
+    }
+
+    .editor-empty {
+      @apply flex min-h-[420px] flex-col justify-center gap-3 text-center;
+    }
+  }
 }
 
 @keyframes agendaFadeIn {

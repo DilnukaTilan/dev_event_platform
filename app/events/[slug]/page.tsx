@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { Suspense } from "react";
 import BookEvent from "@/components/BookEvent";
 import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
 import { IEvent } from "@/database/event.model";
@@ -51,7 +52,7 @@ const EventTags = ({ tags }: { tags: string[] }) => (
   </div>
 );
 
-const EventDetailsPage = async ({
+const EventDetailsContent = async ({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -170,6 +171,27 @@ const EventDetailsPage = async ({
         </div>
       </div>
     </section>
+  );
+};
+
+const EventDetailsPage = ({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) => {
+  return (
+    <Suspense
+      fallback={
+        <section id="event">
+          <div className="header">
+            <h1>Event Description</h1>
+            <p>Loading event details...</p>
+          </div>
+        </section>
+      }
+    >
+      <EventDetailsContent params={params} />
+    </Suspense>
   );
 };
 

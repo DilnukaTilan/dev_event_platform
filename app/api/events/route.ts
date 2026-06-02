@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import { uploadImage } from "@/lib/cloudinary";
 import Event from "@/database/event.model";
+import { isAdminRequest } from "@/lib/admin";
 
 const ALLOWED_MIME_TYPES = [
   "image/jpeg",
@@ -28,8 +29,32 @@ const ALLOWED_FIELDS = [
   "organizer",
 ] as const;
 
+function parseStringList(value: FormDataEntryValue | null, fieldName: string) {
+  try {
+    const parsed = JSON.parse(String(value));
+
+    if (
+      !Array.isArray(parsed) ||
+      !parsed.every((item) => typeof item === "string" && item.trim())
+    ) {
+      throw new Error();
+    }
+
+    return parsed.map((item) => item.trim());
+  } catch {
+    throw new Error(`Invalid JSON format for ${fieldName}`);
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
+    if (!isAdminRequest(req)) {
+      return NextResponse.json(
+        { message: "Administrator access is required to create events" },
+        { status: 403 },
+      );
+    }
+
     await connectDB();
 
     const formData = await req.formData();
@@ -64,11 +89,11 @@ export async function POST(req: NextRequest) {
     let tags: string[];
     let agenda: string[];
     try {
-      tags = JSON.parse(formData.get("tags") as string);
-      agenda = JSON.parse(formData.get("agenda") as string);
-    } catch {
+      tags = parseStringList(formData.get("tags"), "tags");
+      agenda = parseStringList(formData.get("agenda"), "agenda");
+    } catch (error) {
       return NextResponse.json(
-        { message: "Invalid JSON format for tags or agenda" },
+        { message: error instanceof Error ? error.message : "Invalid lists" },
         { status: 400 },
       );
     }
@@ -99,10 +124,15 @@ export async function POST(req: NextRequest) {
     );
   } catch (e) {
     console.error(e);
+    const errorMessage = e instanceof Error ? e.message : "Unknown";
+
     return NextResponse.json(
       {
-        message: "Event Creation Failed",
-        error: e instanceof Error ? e.message : "Unknown",
+        message:
+          process.env.NODE_ENV === "development"
+            ? `Event Creation Failed: ${errorMessage}`
+            : "Event Creation Failed",
+        error: errorMessage,
       },
       { status: 500 },
     );
@@ -111,6 +141,13 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    if (!isAdminRequest(req)) {
+      return NextResponse.json(
+        { message: "Administrator access is required to view all events" },
+        { status: 403 },
+      );
+    }
+
     await connectDB();
 
     const { searchParams } = req.nextUrl;

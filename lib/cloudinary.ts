@@ -1,12 +1,33 @@
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (cloudinaryCloudName && cloudinaryApiKey && cloudinaryApiSecret) {
+  cloudinary.config({
+    cloud_name: cloudinaryCloudName,
+    api_key: cloudinaryApiKey,
+    api_secret: cloudinaryApiSecret,
+  });
+}
+
+function assertCloudinaryConfig() {
+  const hasUrlConfig = Boolean(process.env.CLOUDINARY_URL);
+  const hasSplitConfig = Boolean(
+    cloudinaryCloudName && cloudinaryApiKey && cloudinaryApiSecret,
+  );
+
+  if (!hasUrlConfig && !hasSplitConfig) {
+    throw new Error(
+      "Cloudinary is not configured. Set CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+    );
+  }
+}
 
 export function uploadImage(buffer: Buffer): Promise<UploadApiResponse> {
+  assertCloudinaryConfig();
+
   return new Promise((resolve, reject) => {
     cloudinary.uploader
       .upload_stream(

@@ -16,6 +16,14 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+To enable administrator event creation, add an admin token to `.env.local`:
+
+```bash
+ADMIN_CREATE_EVENT_TOKEN=your-admin-token
+```
+
+Use that token on the `/create-event` page when publishing an event.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
