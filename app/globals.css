@@ -127,7 +127,7 @@ html {
   }
 
   main {
-    @apply mx-auto container flex flex-col sm:px-10 px-5 py-10;
+    @apply mx-auto container flex flex-1 flex-col sm:px-10 px-5 py-10;
   }
 
   h1 {
@@ -195,6 +195,49 @@ html {
 
     ul a:hover::after {
       @apply w-full;
+    }
+  }
+
+  footer {
+    @apply glass mt-16;
+    background: rgba(7, 17, 19, 0.92);
+
+    .footer-inner {
+      @apply mx-auto container grid grid-cols-1 items-center gap-4 px-5 py-8 text-center
+        sm:px-10 md:grid-cols-[minmax(220px,1fr)_auto] md:text-left;
+    }
+
+    .footer-brand-group {
+      @apply flex flex-col items-center gap-2 md:items-start;
+    }
+
+    .footer-brand {
+      @apply flex items-center justify-center gap-2 transition-opacity duration-200 hover:opacity-80
+        md:justify-start;
+    }
+
+    .footer-brand span {
+      @apply text-xl font-bold italic;
+    }
+
+    p {
+      @apply mx-auto max-w-md text-sm leading-relaxed text-light-200 md:mx-0;
+    }
+
+    nav {
+      @apply flex flex-wrap items-center justify-center gap-5 text-sm md:justify-end;
+    }
+
+    nav a {
+      @apply text-light-200 transition-colors duration-200 hover:text-white;
+    }
+
+    .footer-meta {
+      @apply flex flex-col items-center justify-center gap-3 md:items-end;
+    }
+
+    small {
+      @apply text-xs text-light-200/70 md:text-right;
     }
   }
 

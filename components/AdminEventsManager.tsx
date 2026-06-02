@@ -164,7 +164,14 @@ function ScrollHintTextarea(
   );
 }
 
-function splitList(value: string): string[] {
+function splitAgenda(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function splitTags(value: string): string[] {
   return value
     .split(/\r?\n|,/)
     .map((item) => item.trim())
@@ -203,8 +210,11 @@ const AdminEventsManager = () => {
     () => events.find((event) => event.slug === selectedSlug),
     [events, selectedSlug],
   );
-  const agendaItems = useMemo(() => splitList(fields.agenda), [fields.agenda]);
-  const tagItems = useMemo(() => splitList(fields.tags), [fields.tags]);
+  const agendaItems = useMemo(
+    () => splitAgenda(fields.agenda),
+    [fields.agenda],
+  );
+  const tagItems = useMemo(() => splitTags(fields.tags), [fields.tags]);
 
   const updateField =
     (name: keyof EventFields) =>
