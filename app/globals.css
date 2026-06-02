@@ -624,8 +624,67 @@ html {
       @apply flex-center h-8 min-w-8 rounded-full bg-primary/15 px-2 text-sm font-bold text-primary;
     }
 
-    .events-list ul {
-      @apply flex max-h-[720px] list-none flex-col overflow-y-auto p-2;
+    .events-list-scroll {
+      @apply max-h-[720px] overflow-y-auto p-2;
+    }
+
+    .events-list-scroll,
+    .textarea-scroll-wrap textarea {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .events-list-scroll::-webkit-scrollbar,
+    .textarea-scroll-wrap textarea::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scroll-indicator {
+      @apply relative;
+    }
+
+    .scroll-indicator::before,
+    .scroll-indicator::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+      left: 0;
+      z-index: 2;
+      height: 38px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .scroll-indicator::before {
+      top: 0;
+      background:
+        radial-gradient(
+          ellipse 28px 4px at 50% 8px,
+          rgba(89, 222, 202, 0.38),
+          transparent 75%
+        ),
+        linear-gradient(to bottom, rgba(13, 22, 26, 0.96), transparent);
+    }
+
+    .scroll-indicator::after {
+      bottom: 0;
+      background:
+        radial-gradient(
+          ellipse 28px 4px at 50% calc(100% - 8px),
+          rgba(89, 222, 202, 0.46),
+          transparent 75%
+        ),
+        linear-gradient(to top, rgba(13, 22, 26, 0.96), transparent);
+    }
+
+    .scroll-indicator.has-scroll-top::before,
+    .scroll-indicator.has-scroll-bottom::after {
+      opacity: 1;
+    }
+
+    .events-list-scroll ul {
+      @apply flex list-none flex-col;
     }
 
     .events-list li {
@@ -665,6 +724,29 @@ html {
 
     .empty-state {
       @apply p-5;
+    }
+
+    .textarea-scroll-wrap {
+      @apply overflow-hidden rounded-lg;
+    }
+
+    .textarea-scroll-wrap textarea {
+      @apply block w-full;
+    }
+
+    .textarea-scroll-wrap::before,
+    .textarea-scroll-wrap::after {
+      height: 26px;
+    }
+
+    .textarea-scroll-wrap::before {
+      border-top-left-radius: 0.5rem;
+      border-top-right-radius: 0.5rem;
+    }
+
+    .textarea-scroll-wrap::after {
+      border-bottom-left-radius: 0.5rem;
+      border-bottom-right-radius: 0.5rem;
     }
 
     .event-editor {

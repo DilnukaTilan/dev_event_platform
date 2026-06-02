@@ -5,8 +5,8 @@ import { Event } from "@/database/event.model";
 import { cacheLife } from "next/cache";
 
 const Home = async () => {
-  "use cache";
-  cacheLife("hours");
+  // "use cache";
+  // cacheLife("hours");
 
   await connectToDatabase();
   const events = await Event.find().sort({ createdAt: -1 }).lean();

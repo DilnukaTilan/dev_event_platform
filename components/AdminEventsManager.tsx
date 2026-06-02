@@ -2,7 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+} from "react";
 import {
   Calendar,
   Clock,
@@ -43,6 +51,11 @@ type EventFields = Omit<
   tags: string;
 };
 
+type ScrollIndicators = {
+  top: boolean;
+  bottom: boolean;
+};
+
 const emptyFields: EventFields = {
   title: "",
   description: "",
@@ -57,6 +70,99 @@ const emptyFields: EventFields = {
   agenda: "",
   tags: "",
 };
+
+function scrollIndicatorClass(baseClass: string, indicators: ScrollIndicators) {
+  return [
+    baseClass,
+    "scroll-indicator",
+    indicators.top ? "has-scroll-top" : "",
+    indicators.bottom ? "has-scroll-bottom" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function useScrollIndicators<T extends HTMLElement>() {
+  const scrollRef = useRef<T>(null);
+  const [indicators, setIndicators] = useState<ScrollIndicators>({
+    top: false,
+    bottom: false,
+  });
+
+  const updateIndicators = useCallback(() => {
+    const node = scrollRef.current;
+
+    if (!node) {
+      return;
+    }
+
+    const maxScrollTop = node.scrollHeight - node.clientHeight;
+    const nextIndicators = {
+      top: node.scrollTop > 2,
+      bottom: maxScrollTop - node.scrollTop > 2,
+    };
+
+    setIndicators((current) =>
+      current.top === nextIndicators.top &&
+      current.bottom === nextIndicators.bottom
+        ? current
+        : nextIndicators,
+    );
+  }, []);
+
+  useEffect(() => {
+    updateIndicators();
+
+    const node = scrollRef.current;
+
+    if (!node || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(updateIndicators);
+    resizeObserver.observe(node);
+
+    return () => resizeObserver.disconnect();
+  });
+
+  return { indicators, scrollRef, updateIndicators };
+}
+
+function ScrollHintArea({ children }: { children: ReactNode }) {
+  const { indicators, scrollRef, updateIndicators } =
+    useScrollIndicators<HTMLDivElement>();
+
+  return (
+    <div
+      ref={scrollRef}
+      className={scrollIndicatorClass("events-list-scroll", indicators)}
+      onScroll={updateIndicators}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ScrollHintTextarea(
+  props: TextareaHTMLAttributes<HTMLTextAreaElement>,
+) {
+  const { indicators, scrollRef, updateIndicators } =
+    useScrollIndicators<HTMLTextAreaElement>();
+  const { onScroll, ...textareaProps } = props;
+
+  return (
+    <div className={scrollIndicatorClass("textarea-scroll-wrap", indicators)}>
+      <textarea
+        ref={scrollRef}
+        onScroll={(event) => {
+          updateIndicators();
+          onScroll?.(event);
+        }}
+        {...textareaProps}
+      />
+    </div>
+  );
+}
 
 function splitList(value: string): string[] {
   return value
@@ -298,29 +404,31 @@ const AdminEventsManager = () => {
           </div>
 
           {events.length > 0 ? (
-            <ul>
-              {events.map((event) => (
-                <li key={event._id}>
-                  <button
-                    type="button"
-                    className={event.slug === selectedSlug ? "active" : ""}
-                    onClick={() => selectEvent(event)}
-                  >
-                    <Image
-                      src={event.image}
-                      alt=""
-                      width={72}
-                      height={52}
-                      className="event-thumb"
-                    />
-                    <span>
-                      <strong>{event.title}</strong>
-                      <small>{event.date}</small>
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <ScrollHintArea>
+              <ul>
+                {events.map((event) => (
+                  <li key={event._id}>
+                    <button
+                      type="button"
+                      className={event.slug === selectedSlug ? "active" : ""}
+                      onClick={() => selectEvent(event)}
+                    >
+                      <Image
+                        src={event.image}
+                        alt=""
+                        width={72}
+                        height={52}
+                        className="event-thumb"
+                      />
+                      <span>
+                        <strong>{event.title}</strong>
+                        <small>{event.date}</small>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </ScrollHintArea>
           ) : (
             <p className="empty-state">Enter the admin key to load events.</p>
           )}
@@ -352,7 +460,7 @@ const AdminEventsManager = () => {
 
                   <div className="field-group">
                     <label htmlFor="edit-description">Short description</label>
-                    <textarea
+                    <ScrollHintTextarea
                       id="edit-description"
                       rows={3}
                       value={fields.description}
@@ -363,7 +471,7 @@ const AdminEventsManager = () => {
 
                   <div className="field-group">
                     <label htmlFor="edit-overview">Overview</label>
-                    <textarea
+                    <ScrollHintTextarea
                       id="edit-overview"
                       rows={5}
                       value={fields.overview}
@@ -482,7 +590,7 @@ const AdminEventsManager = () => {
                   <div className="two-column">
                     <div className="field-group">
                       <label htmlFor="edit-agenda">Agenda</label>
-                      <textarea
+                      <ScrollHintTextarea
                         id="edit-agenda"
                         rows={5}
                         value={fields.agenda}
@@ -493,7 +601,7 @@ const AdminEventsManager = () => {
 
                     <div className="field-group">
                       <label htmlFor="edit-tags">Tags</label>
-                      <textarea
+                      <ScrollHintTextarea
                         id="edit-tags"
                         rows={5}
                         value={fields.tags}
