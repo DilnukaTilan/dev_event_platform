@@ -471,6 +471,64 @@ html {
       @apply resize-y leading-relaxed;
     }
 
+    .textarea-scroll-wrap {
+      @apply relative overflow-hidden rounded-lg;
+    }
+
+    .textarea-scroll-wrap textarea {
+      @apply block w-full;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .textarea-scroll-wrap textarea::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scroll-indicator::before,
+    .scroll-indicator::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+      left: 0;
+      z-index: 2;
+      height: 26px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .scroll-indicator::before {
+      top: 0;
+      border-top-left-radius: 0.5rem;
+      border-top-right-radius: 0.5rem;
+      background:
+        radial-gradient(
+          ellipse 28px 4px at 50% 8px,
+          rgba(89, 222, 202, 0.38),
+          transparent 75%
+        ),
+        linear-gradient(to bottom, rgba(13, 22, 26, 0.96), transparent);
+    }
+
+    .scroll-indicator::after {
+      bottom: 0;
+      border-bottom-left-radius: 0.5rem;
+      border-bottom-right-radius: 0.5rem;
+      background:
+        radial-gradient(
+          ellipse 28px 4px at 50% calc(100% - 8px),
+          rgba(89, 222, 202, 0.46),
+          transparent 75%
+        ),
+        linear-gradient(to top, rgba(13, 22, 26, 0.96), transparent);
+    }
+
+    .scroll-indicator.has-scroll-top::before,
+    .scroll-indicator.has-scroll-bottom::after {
+      opacity: 1;
+    }
+
     input[type="file"] {
       @apply cursor-pointer text-light-200;
     }

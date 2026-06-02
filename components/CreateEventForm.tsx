@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type TextareaHTMLAttributes,
+} from "react";
 import {
   Calendar,
   Clock,
@@ -29,7 +36,97 @@ const initialFields = {
   tags: "",
 };
 
-function splitList(value: string): string[] {
+type ScrollIndicators = {
+  top: boolean;
+  bottom: boolean;
+};
+
+function scrollIndicatorClass(baseClass: string, indicators: ScrollIndicators) {
+  return [
+    baseClass,
+    "scroll-indicator",
+    indicators.top ? "has-scroll-top" : "",
+    indicators.bottom ? "has-scroll-bottom" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function useScrollIndicators<T extends HTMLElement>() {
+  const scrollRef = useRef<T>(null);
+  const [indicators, setIndicators] = useState<ScrollIndicators>({
+    top: false,
+    bottom: false,
+  });
+
+  const updateIndicators = useCallback(() => {
+    const node = scrollRef.current;
+
+    if (!node) {
+      return;
+    }
+
+    const maxScrollTop = node.scrollHeight - node.clientHeight;
+    const nextIndicators = {
+      top: node.scrollTop > 2,
+      bottom: maxScrollTop - node.scrollTop > 2,
+    };
+
+    setIndicators((current) =>
+      current.top === nextIndicators.top &&
+      current.bottom === nextIndicators.bottom
+        ? current
+        : nextIndicators,
+    );
+  }, []);
+
+  useEffect(() => {
+    updateIndicators();
+
+    const node = scrollRef.current;
+
+    if (!node || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(updateIndicators);
+    resizeObserver.observe(node);
+
+    return () => resizeObserver.disconnect();
+  });
+
+  return { indicators, scrollRef, updateIndicators };
+}
+
+function ScrollHintTextarea(
+  props: TextareaHTMLAttributes<HTMLTextAreaElement>,
+) {
+  const { indicators, scrollRef, updateIndicators } =
+    useScrollIndicators<HTMLTextAreaElement>();
+  const { onScroll, ...textareaProps } = props;
+
+  return (
+    <div className={scrollIndicatorClass("textarea-scroll-wrap", indicators)}>
+      <textarea
+        ref={scrollRef}
+        onScroll={(event) => {
+          updateIndicators();
+          onScroll?.(event);
+        }}
+        {...textareaProps}
+      />
+    </div>
+  );
+}
+
+function splitAgenda(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function splitTags(value: string): string[] {
   return value
     .split(/\r?\n|,/)
     .map((item) => item.trim())
@@ -46,8 +143,11 @@ const CreateEventForm = () => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const agendaItems = useMemo(() => splitList(fields.agenda), [fields.agenda]);
-  const tagItems = useMemo(() => splitList(fields.tags), [fields.tags]);
+  const agendaItems = useMemo(
+    () => splitAgenda(fields.agenda),
+    [fields.agenda],
+  );
+  const tagItems = useMemo(() => splitTags(fields.tags), [fields.tags]);
 
   useEffect(() => {
     if (!image) {
@@ -140,7 +240,7 @@ const CreateEventForm = () => {
 
           <div className="field-group">
             <label htmlFor="description">Short description</label>
-            <textarea
+            <ScrollHintTextarea
               id="description"
               name="description"
               rows={3}
@@ -153,7 +253,7 @@ const CreateEventForm = () => {
 
           <div className="field-group">
             <label htmlFor="overview">Overview</label>
-            <textarea
+            <ScrollHintTextarea
               id="overview"
               name="overview"
               rows={6}
@@ -280,7 +380,7 @@ const CreateEventForm = () => {
           <div className="two-column list-fields">
             <div className="field-group">
               <label htmlFor="agenda">Agenda</label>
-              <textarea
+              <ScrollHintTextarea
                 id="agenda"
                 name="agenda"
                 rows={5}
@@ -293,7 +393,7 @@ const CreateEventForm = () => {
 
             <div className="field-group">
               <label htmlFor="tags">Tags</label>
-              <textarea
+              <ScrollHintTextarea
                 id="tags"
                 name="tags"
                 rows={5}
