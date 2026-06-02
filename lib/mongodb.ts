@@ -37,3 +37,5 @@ export async function connectToDatabase(): Promise<Connection> {
 
   return cached.conn;
 }
+
+export default connectToDatabase;

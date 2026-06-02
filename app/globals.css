@@ -397,8 +397,8 @@ html {
       }
 
       button {
-        @apply bg-primary w-full cursor-pointer items-center justify-center rounded-lg px-4 py-2.5
-          text-lg font-semibold text-black
+        @apply bg-primary w-full cursor-pointer items-center justify-center rounded-lg px-5 py-2.5 mt-2
+          text-base font-semibold text-black
           transition-all duration-200
           hover:bg-primary/90 hover:shadow-[0_4px_20px_rgba(89,222,202,0.3)]
           active:scale-[0.98];

@@ -2,8 +2,12 @@ import ExploreBtn from "@/components/ExploreBtn";
 import EventCard from "@/components/EventCard";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/database/event.model";
+import { cacheLife } from "next/cache";
 
 const Home = async () => {
+  "use cache";
+  cacheLife("hours");
+
   await connectToDatabase();
   const events = await Event.find().sort({ createdAt: -1 }).lean();
 

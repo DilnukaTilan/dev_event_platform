@@ -1,220 +1,96 @@
-import { connectToDatabase } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
-import { Event } from "@/database/event.model";
-import mongoose from "mongoose";
-import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
+import connectDB from "@/lib/mongodb";
+import { uploadImage } from "@/lib/cloudinary";
+import Event from "@/database/event.model";
 
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-type EventMode = "online" | "offline" | "hybrid";
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
 
-interface EventPayload {
-  title: string;
-  description: string;
-  overview: string;
-  venue: string;
-  location: string;
-  date: string;
-  time: string;
-  mode: EventMode;
-  audience: string;
-  agenda: string[];
-  organizer: string;
-  tags: string[];
-  image: string;
-}
-
-class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
-
-function getRequiredString(formData: FormData, field: string): string {
-  const value = formData.get(field);
-
-  if (typeof value !== "string" || !value.trim()) {
-    throw new ApiError(400, `Field "${field}" is required.`);
-  }
-
-  return value.trim();
-}
-
-function parseStringArray(raw: string, field: string): string[] {
-  const trimmed = raw.trim();
-
-  if (!trimmed) {
-    return [];
-  }
-
-  if (trimmed.startsWith("[")) {
-    try {
-      const parsed = JSON.parse(trimmed);
-
-      if (
-        !Array.isArray(parsed) ||
-        parsed.some((item) => typeof item !== "string")
-      ) {
-        throw new ApiError(
-          400,
-          `Field "${field}" must be an array of strings.`,
-        );
-      }
-
-      return parsed.map((item) => item.trim()).filter(Boolean);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      throw new ApiError(400, `Field "${field}" contains invalid JSON.`);
-    }
-  }
-
-  return trimmed
-    .split(/[\n,]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function getStringArray(formData: FormData, field: string): string[] {
-  const values = [...formData.getAll(field), ...formData.getAll(`${field}[]`)];
-  const strings = values.filter(
-    (value): value is string =>
-      typeof value === "string" && value.trim().length > 0,
-  );
-
-  const items =
-    strings.length === 1
-      ? parseStringArray(strings[0], field)
-      : strings.map((value) => value.trim());
-
-  if (!items.length) {
-    throw new ApiError(400, `Field "${field}" must contain at least one item.`);
-  }
-
-  return items;
-}
-
-function getEventMode(formData: FormData): EventMode {
-  const mode = getRequiredString(formData, "mode").toLowerCase();
-
-  if (mode !== "online" && mode !== "offline" && mode !== "hybrid") {
-    throw new ApiError(
-      400,
-      'Field "mode" must be "online", "offline", or "hybrid".',
-    );
-  }
-
-  return mode;
-}
-
-function getRequiredImage(formData: FormData): File {
-  const file = formData.get("image");
-
-  if (!(file instanceof File)) {
-    throw new ApiError(400, "Image is required.");
-  }
-
-  if (!file.size) {
-    throw new ApiError(400, "Image cannot be empty.");
-  }
-
-  if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    throw new ApiError(400, "Image must be 5MB or smaller.");
-  }
-
-  if (!file.type.startsWith("image/")) {
-    throw new ApiError(400, "Uploaded file must be an image.");
-  }
-
-  return file;
-}
-
-function buildEventPayload(formData: FormData): Omit<EventPayload, "image"> {
-  return {
-    title: getRequiredString(formData, "title"),
-    description: getRequiredString(formData, "description"),
-    overview: getRequiredString(formData, "overview"),
-    venue: getRequiredString(formData, "venue"),
-    location: getRequiredString(formData, "location"),
-    date: getRequiredString(formData, "date"),
-    time: getRequiredString(formData, "time"),
-    mode: getEventMode(formData),
-    audience: getRequiredString(formData, "audience"),
-    agenda: getStringArray(formData, "agenda"),
-    organizer: getRequiredString(formData, "organizer"),
-    tags: getStringArray(formData, "tags"),
-  };
-}
-
-async function uploadImage(file: File): Promise<UploadApiResponse> {
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "DevEvent",
-        resource_type: "image",
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        if (!result?.secure_url) {
-          reject(new Error("Cloudinary upload did not return a secure URL."));
-          return;
-        }
-
-        resolve(result);
-      },
-    );
-
-    uploadStream.end(buffer);
-  });
-}
-
-function isDuplicateKeyError(error: unknown): error is { code: number } {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: number }).code === 11000
-  );
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Unknown error";
-}
+const ALLOWED_FIELDS = [
+  "title",
+  "description",
+  "overview",
+  "venue",
+  "location",
+  "date",
+  "time",
+  "mode",
+  "audience",
+  "organizer",
+] as const;
 
 export async function POST(req: NextRequest) {
   try {
-    let formData: FormData;
+    await connectDB();
 
-    try {
-      formData = await req.formData();
-    } catch (e) {
-      console.error(e);
+    const formData = await req.formData();
+
+    const file = formData.get("image") as File | null;
+
+    if (!file) {
       return NextResponse.json(
-        { message: "Invalid form data" },
+        { message: "Image file is required" },
         { status: 400 },
       );
     }
 
-    const event = buildEventPayload(formData);
-    const file = getRequiredImage(formData);
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        {
+          message: `Invalid image type "${file.type}". Allowed: ${ALLOWED_MIME_TYPES.join(", ")}`,
+        },
+        { status: 400 },
+      );
+    }
 
-    await connectToDatabase();
-    const uploadResult = await uploadImage(file);
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        {
+          message: `Image exceeds the ${MAX_FILE_SIZE / (1024 * 1024)} MB size limit`,
+        },
+        { status: 400 },
+      );
+    }
+
+    let tags: string[];
+    let agenda: string[];
+    try {
+      tags = JSON.parse(formData.get("tags") as string);
+      agenda = JSON.parse(formData.get("agenda") as string);
+    } catch {
+      return NextResponse.json(
+        { message: "Invalid JSON format for tags or agenda" },
+        { status: 400 },
+      );
+    }
+
+    const eventData: Record<string, string> = {};
+    for (const field of ALLOWED_FIELDS) {
+      const value = formData.get(field);
+      if (typeof value === "string") {
+        eventData[field] = value;
+      }
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const uploadResult = await uploadImage(buffer);
 
     const createdEvent = await Event.create({
-      ...event,
+      ...eventData,
       image: uploadResult.secure_url,
+      tags,
+      agenda,
     });
 
     return NextResponse.json(
@@ -223,47 +99,57 @@ export async function POST(req: NextRequest) {
     );
   } catch (e) {
     console.error(e);
-
-    if (e instanceof ApiError) {
-      return NextResponse.json({ message: e.message }, { status: e.status });
-    }
-
-    if (e instanceof mongoose.Error.ValidationError) {
-      return NextResponse.json(
-        { message: "Event validation failed", error: e.message },
-        { status: 400 },
-      );
-    }
-
-    if (isDuplicateKeyError(e)) {
-      return NextResponse.json(
-        { message: "An event with this title already exists." },
-        { status: 409 },
-      );
-    }
-
     return NextResponse.json(
       {
-        message: "Event creation failed",
-        error: errorMessage(e),
+        message: "Event Creation Failed",
+        error: e instanceof Error ? e.message : "Unknown",
       },
       { status: 500 },
     );
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    await connectToDatabase();
-    const events = await Event.find().sort({ createdAt: -1 }).lean();
+    await connectDB();
+
+    const { searchParams } = req.nextUrl;
+
+    const page = Math.max(
+      DEFAULT_PAGE,
+      Number(searchParams.get("page")) || DEFAULT_PAGE,
+    );
+    const limit = Math.min(
+      MAX_LIMIT,
+      Math.max(1, Number(searchParams.get("limit")) || DEFAULT_LIMIT),
+    );
+    const skip = (page - 1) * limit;
+
+    const [events, total] = await Promise.all([
+      Event.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Event.countDocuments(),
+    ]);
+
     return NextResponse.json(
-      { message: "Events fetched successfully", events },
+      {
+        message: "Events fetched successfully",
+        events,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
       { status: 200 },
     );
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { message: "Failed to fetch events", error: errorMessage(e) },
+      {
+        message: "Failed to fetch events",
+        error: e instanceof Error ? e.message : "Unknown",
+      },
       { status: 500 },
     );
   }

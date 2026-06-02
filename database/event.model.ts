@@ -134,3 +134,5 @@ eventSchema.pre("save", async function () {
 export const Event: Model<IEvent> =
   (mongoose.models.Event as Model<IEvent>) ??
   mongoose.model<IEvent>("Event", eventSchema);
+
+export default Event;
