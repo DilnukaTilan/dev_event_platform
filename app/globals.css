@@ -489,6 +489,16 @@ html {
       @apply grid grid-cols-2 gap-5 max-md:grid-cols-1;
     }
 
+    .two-column > * {
+      min-width: 0;
+    }
+
+    input[type="date"],
+    input[type="time"] {
+      width: 100%;
+      min-width: 0;
+    }
+
     .list-fields {
       @apply items-start;
     }
@@ -876,6 +886,16 @@ html {
 
     .two-column {
       @apply grid grid-cols-2 gap-5 max-md:grid-cols-1;
+    }
+
+    .two-column > * {
+      min-width: 0;
+    }
+
+    input[type="date"],
+    input[type="time"] {
+      width: 100%;
+      min-width: 0;
     }
 
     .mode-options {
