@@ -2,11 +2,13 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Suspense } from "react";
 import BookEvent from "@/components/BookEvent";
-import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
+import {
+  getEventBySlug,
+  getSimilarEventsBySlug,
+} from "@/lib/actions/event.actions";
+import { getBookingCount } from "@/lib/actions/booking.actions";
 import { IEvent } from "@/database/event.model";
 import EventCard from "@/components/EventCard";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const RenderEventDetails = ({
   icon,
@@ -58,28 +60,32 @@ const EventDetailsContent = async ({
   params: Promise<{ slug: string }>;
 }) => {
   const { slug } = await params;
-  const response = await fetch(`${BASE_URL}/api/events/${slug}`);
+  const event = await getEventBySlug(slug);
+
+  if (!event) {
+    return notFound();
+  }
+
   const {
-    event: {
-      description,
-      image,
-      overview,
-      date,
-      time,
-      location,
-      mode,
-      agenda,
-      audience,
-      organizer,
-      tags,
-    },
-  } = await response.json();
+    description,
+    image,
+    overview,
+    date,
+    time,
+    location,
+    mode,
+    agenda,
+    audience,
+    organizer,
+    tags,
+    _id: eventId,
+  } = event;
 
   if (!description) {
     return notFound();
   }
 
-  const bookings = 10;
+  const bookings = await getBookingCount(eventId);
 
   const similarEvents: IEvent[] = await getSimilarEventsBySlug(slug);
 
@@ -156,7 +162,7 @@ const EventDetailsContent = async ({
               <p className="text-sm">Be the first to book your spot!</p>
             )}
 
-            <BookEvent />
+            <BookEvent eventId={eventId} />
           </div>
         </aside>
       </div>
