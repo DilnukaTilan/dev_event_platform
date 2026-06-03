@@ -15,6 +15,7 @@ import {
   Calendar,
   Clock,
   LoaderCircle,
+  Building2,
   MapPin,
   Pencil,
   RefreshCw,
@@ -522,7 +523,10 @@ const AdminEventsManager = () => {
 
                   <div className="two-column">
                     <div className="field-group">
-                      <label htmlFor="edit-venue">Venue</label>
+                      <label htmlFor="edit-venue">
+                        <Building2 size={16} aria-hidden="true" />
+                        Venue
+                      </label>
                       <input
                         id="edit-venue"
                         type="text"

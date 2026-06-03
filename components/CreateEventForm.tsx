@@ -14,6 +14,7 @@ import {
   Calendar,
   Clock,
   LoaderCircle,
+  Building2,
   MapPin,
   Send,
   ShieldCheck,
@@ -298,7 +299,10 @@ const CreateEventForm = () => {
 
           <div className="two-column">
             <div className="field-group">
-              <label htmlFor="venue">Venue</label>
+              <label htmlFor="venue">
+                <Building2 size={16} aria-hidden="true" />
+                Venue
+              </label>
               <input
                 id="venue"
                 name="venue"
